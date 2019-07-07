@@ -1,127 +1,154 @@
 package com.company;
 
+
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
     public static void main(String[] args) {
 
+        List<Banks> listOfBanks = banksList();
+        List<Credit> listOfCredits = creditList();
+        Integer input = inputCreditSum();
+        Integer salary = inputSalary();
+        acceptCredit(input, salary, listOfCredits,listOfBanks);
 
-        List<Student> listOfStudents = new ArrayList();
-        listOfStudents = addStudentsToList();
-        compareListOfStudents(listOfStudents);
-        getStudentsNames(listOfStudents);
-        getAverage(listOfStudents);
 
-        printMap(listOfStudents);
-        getIdMap(listOfStudents);
     }
 
-    public static List<Student> addStudentsToList() {
+
+    public static Integer inputCreditSum() {
+        Scanner in = new Scanner(System.in);
+        String input = null;
+        Pattern pattern = Pattern.compile("^\\d+$");
+        Matcher matcher = null;
+
+        do {
+            System.out.println("Input a credit sum that you would like to get: ");
+            input = in.nextLine();
+            matcher = pattern.matcher(input);
+        } while (!matcher.matches());
 
 
-        List<Student> listOfStudents = new ArrayList<Student>();
-        listOfStudents.add(new Student(110, "Tom", "Brown", 10));
-        listOfStudents.add(new Student(112, "David", "Bally", 23));
-        listOfStudents.add(new Student(111, "Tommy", "Davidson", 7));
-        listOfStudents.add(new Student(113, "Dan", "Terronte", 10));
-        listOfStudents.add(new Student(114, "Genry", "Bont", 15));
-        listOfStudents.add(new Student(9, "Gerry", "Brownet", 17));
-        listOfStudents.add(new Student(116, "Marry", "Kost", 24));
-        listOfStudents.add(new Student(117, "Ban", "Sharon", 22));
-        listOfStudents.add(new Student(118, "Betty", "Barrow", 19));
-        listOfStudents.add(new Student(119, "Sonty", "Brod", 20));
+        return Integer.parseInt(input);
 
-        printListOfStudents(listOfStudents);
-        return listOfStudents;
     }
 
-    public static void printListOfStudents(List<Student> list) {
+    public static Integer inputSalary() {
+        Scanner in = new Scanner(System.in);
+        String input = null;
+        Pattern pattern = Pattern.compile("^\\d+$");
+        Matcher matcher = null;
 
-        System.out.println("The list has the following items:");
-        for (Student student : list) {
-            //student.printStudent();
-            System.out.println(student.toString());
+        do {
+            System.out.println("Input your salary: ");
+            input = in.nextLine();
+            matcher = pattern.matcher(input);
+        } while (!matcher.matches());
+        return Integer.parseInt(input);
+    }
+
+    public static List<Banks> banksList() {
+        List<Banks> listOfBanks = new ArrayList<Banks>();
+        Collections.addAll(listOfBanks,
+                new Banks("Bank1", "113, Odintsova Str., Minsk", "Ph. (017) 213-13-13"),
+                new Banks("Bank2", "11, Filatova Str., Minsk", "Ph. (017) 211-11-11"),
+                new Banks("Bank3", "5, Lobanka Str., Minsk", "Ph. (017) 210-10-10"));
+        return listOfBanks;
+    }
+
+    public static List<Credit> creditList() {
+        List<Credit> listOfCredits = new ArrayList<Credit>();
+        Collections.addAll(listOfCredits,
+                new Credit("Credit1", "Bank1", 10000, 490, 15.30, true, false, 60),
+                new Credit("Credit2", "Bank1", 1000, 42, 10.3, false, false, 60),
+                new Credit("Credit3", "Bank1", 5000, 273, 19.3, true, false, 60),
+                new Credit("Credit4", "Bank2", 4000, 345, 17.3, true, false, 36)
+        );
+        return listOfCredits;
+    }
+
+    public static void acceptCredit(Integer input, Integer salary, List<Credit> listOfCredits, List<Banks> banksList) {
+        Credit clientCredit = new Credit();
+        clientCredit.setMaxSum(input);
+        clientCredit.setMinReturn(salary);
+
+        if (listOfCredits.stream().anyMatch(credit -> input <= credit.getMaxSum() && (salary >= credit.getMinReturn()))) {
+
+            listOfCredits.stream()
+                    .filter(credit -> input <= credit.getMaxSum())
+                    .filter(credit -> salary >= credit.getMinReturn())
+                    .forEach(credit -> credit.printShortCreditInfo());
+
+            creditDetails(input, salary, listOfCredits, banksList);
         }
-    }
 
-    public static List<Student> compareListOfStudents(List<Student> listOfStudents) {
-        Comparator<Student> studCompare = new StudentsAgeComparator().thenComparing(new StudentsAgeComparator());
-        listOfStudents.sort(studCompare);
+        if (listOfCredits.stream()
+                .noneMatch(credit -> input <= credit.getMaxSum()) || listOfCredits.stream().noneMatch(credit -> salary >= credit.getMinReturn())) {
+            System.out.println("Try change the input value (credit amount) to find at least one available credit.");
 
-        System.out.println("The list of students after comparison:");
-        for (Student student : listOfStudents) {
-            student.printStudent();
         }
 
-
-        return listOfStudents;
     }
 
-    public static List<Student> getStudentsNames(List<Student> listOfStudents) {
-        List<Student> selectedByName = new ArrayList<>();
+    public static void creditDetails(Integer input, Integer salary, List<Credit> listOfCredits, List<Banks> banksList) {
+        Scanner in = new Scanner(System.in);
+        String choise = null;
+        Pattern pattern = Pattern.compile("^[YyNn]+$");
+        Matcher matcher = null;
 
-        System.out.println("The list of students with letter <T>:");
-        for (Student student : listOfStudents) {
-            if (student.studNameContains()) {
-                selectedByName.add(student);
+        do {
+            System.out.println("Would you like to take a look at credit more deeper? Y /N");
+            choise = in.nextLine();
+            matcher = pattern.matcher(choise);
+        } while (!matcher.matches());
 
+
+        if (choise.matches("y") || choise.matches("Y")) {
+            reviewSelectedCredit(input, salary, listOfCredits, banksList);
+        }else
+            System.out.println("End.");
+
+    }
+
+
+
+    public static void reviewSelectedCredit(Integer input, Integer salary, List<Credit> listOfCredits, List<Banks> banksList) {
+
+        Scanner newIn = new Scanner(System.in);
+        String selectedCredit = null;
+        Pattern creditPattern = Pattern.compile("^[a-zA-Z500-9]+$");
+        Matcher creditMatcher = null;
+        do {
+            System.out.println("Enter creditName to take a look at details.");
+            selectedCredit = newIn.nextLine();
+            creditMatcher = creditPattern.matcher(selectedCredit);
+        } while (!creditMatcher.matches());
+
+
+        for (Credit credits : listOfCredits) {
+            if (!credits.getCreditName().equalsIgnoreCase(selectedCredit)) {
+                continue;
             }
-
-        }
-        printListOfStudents(selectedByName);
-        return selectedByName;
-    }
-
-    public static int getAverage(List<Student> studentList) {
-        int ageMathAverage = 0;
-        for (Student stud : studentList) {
-            ageMathAverage = ageMathAverage + stud.getAge();
-        }
-        System.out.println("Age Average =" + ageMathAverage / studentList.size());
-        return ageMathAverage;
-    }
-
-    public static Map<Integer, Student> printMap(List<Student> list) {
-        Map<Integer, Student> mapStudents = new HashMap<Integer, Student>();
-
-        for (Student student : list) {
-            mapStudents.put(student.getId(), student);
-
-
-        }
-
-        for (Map.Entry<Integer, Student> mapStudent : mapStudents.entrySet()) {
-            System.out.println("Map has the following k => V:");
-            System.out.printf("Key: %s  Value: %s \n", mapStudent.getKey(), mapStudent.getValue());
-        }
-
-        return mapStudents;
-
-
-    }
-
-    public static Map<Integer, Student> getIdMap(List<Student> list) {
-        Map<Integer, Student> mapStudents = new HashMap<Integer, Student>();
-
-        for (Student student : list) {
-            if (student.getId() < 100) {
-                mapStudents.put(student.getId(), student);
-            }
-
-        }
-
-        if (!mapStudents.isEmpty()) {
-            System.out.println("Map has the following students where id < 100");
-            for (Map.Entry<Integer, Student> mapStudent : mapStudents.entrySet()) {
-
-                System.out.printf("Key: %s  Value: %s \n", mapStudent.getKey(), mapStudent.getValue());
+            if (credits.getCreditName().equalsIgnoreCase(selectedCredit)) {
+                System.out.println("You've selected the following credit. Contact to Bank specialist using contacts below:");
+                credits.printFullCreditInfo();
+                for (Banks bank : banksList)
+                    if (bank.getBankName().equalsIgnoreCase(credits.getBankName()))
+                        bank.printBankInfo();
+                    break;
             }
         }
-        else
-            System.out.println("There are no students with id <100.");
+
+//        String cred=selectedCredit;
+//        listOfCredits.stream()
+//                .filter(cr->cr.getCreditName().equalsIgnoreCase(cred))
+//                .forEach(cr-> cr.printFullCreditInfo());
 
 
-        return mapStudents;
+
+
     }
 }

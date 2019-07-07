@@ -43,7 +43,7 @@ public class Student {
     }
 
     public boolean studNameContains() {
-        String firstLetter = getfName();
+        String firstLetter = getlName();
         boolean contains = false;
         if (firstLetter.startsWith("T") || firstLetter.startsWith("t")) {
             contains = true;
